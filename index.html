@@ -1,0 +1,472 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Renounce ($RNCD): a memecoin launchpad where every coin is renounced. No dev wallet, no owner. Buybacks and burns run on their own.">
+<meta name="theme-color" content="#1b1238">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Crect width='16' height='16' fill='%231b1238'/%3E%3Crect x='1' y='3' width='14' height='9' fill='%23cfcbc2'/%3E%3Crect x='2' y='4' width='12' height='7' fill='%230b0904'/%3E%3Crect x='3' y='6' width='6' height='1' fill='%23ffb000'/%3E%3Crect x='3' y='8' width='4' height='1' fill='%23ffb000'/%3E%3Crect x='5' y='12' width='6' height='2' fill='%239a968e'/%3E%3C/svg%3E">
+<title>RENOUNCE</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+/* layout: a retro desktop at 3am. a pixel-art empty office fills the screen behind (live clock, spinning empty chair, sleeping cat, amber CRT); classic beveled windows sit on a tall desktop and can be dragged, minimised and closed; a taskbar runs along the bottom */
+:root{
+  color-scheme:dark;
+  --face:#cfcbc2;--hi:#fff;--lo:#7d7a73;--dk:#1f1d1a;--txt:#121110;
+  --t1:#24166b;--t2:#6b4cff;--amber:#ffb000;--teal:#14d3b0;--pink:#ff4f9a;--red:#e8433a;
+  --pix:'Silkscreen',monospace;--term:'VT323',monospace;--ui:Tahoma,Verdana,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#0d0820;color:var(--txt);font-family:var(--ui);font-size:13px}
+body{overflow-x:hidden}
+button{font:inherit;color:inherit;cursor:pointer}
+input{font:inherit}
+a{color:inherit}
+#bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;image-rendering:pixelated;display:block}
+.scan{position:fixed;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);mix-blend-mode:multiply}
+.cam{position:fixed;right:14px;top:10px;z-index:3;font-family:var(--term);font-size:19px;color:#fff;text-align:right;line-height:1;text-shadow:0 0 6px rgba(0,0,0,.8);pointer-events:none}
+.cam b{color:var(--red);font-weight:400;animation:rec 1.2s steps(1) infinite}
+@keyframes rec{50%{opacity:0}}
+/* desktop icons */
+.icons{position:fixed;left:10px;top:12px;z-index:4;display:flex;flex-direction:column;gap:14px;width:76px}
+.ico{display:flex;flex-direction:column;align-items:center;gap:4px;padding:4px;border:1px dotted transparent;background:none;border-radius:0;color:#fff;font-size:11.5px;text-shadow:1px 1px 0 #000;text-align:center;user-select:none}
+.ico:focus,.ico.sel{border-color:#fff;background:rgba(107,76,255,.45);outline:0}
+.ico svg{width:34px;height:34px;image-rendering:pixelated}
+/* desktop */
+.desk{position:relative;z-index:5;min-height:100vh;margin-left:96px;margin-right:0}
+.win{position:absolute;background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:inset -1px -1px 0 var(--lo),inset 1px 1px 0 #e9e6df,6px 8px 0 rgba(0,0,0,.35);padding:3px;min-width:260px;animation:pop .22s steps(4)}
+.win.hid{display:none}
+.win.front{z-index:20}
+@keyframes pop{from{transform:scale(.92);opacity:.2}}
+.bar{display:flex;align-items:center;gap:6px;height:22px;padding:0 3px 0 5px;background:linear-gradient(90deg,var(--t1),var(--t2));color:#fff;font-weight:700;font-size:12px;cursor:move;user-select:none;touch-action:none}
+.win:not(.front) .bar{background:linear-gradient(90deg,#5d5a66,#8f8b97)}
+.bar .ttl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .ttl i{font-style:normal;font-weight:400;opacity:.8}
+.wb{width:17px;height:15px;background:var(--face);border:1px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);color:var(--txt);font-size:10px;line-height:11px;font-weight:700;padding:0;display:grid;place-items:center}
+.wb:active{border-color:var(--dk) var(--hi) var(--hi) var(--dk)}
+.body{padding:12px;background:var(--face)}
+.body.flush{padding:0}
+.inset{background:#fff;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);box-shadow:inset 1px 1px 0 var(--dk)}
+.b95{background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:inset -1px -1px 0 var(--lo);padding:6px 12px;font-weight:700;font-size:12.5px;white-space:nowrap}
+.b95:active{border-color:var(--dk) var(--hi) var(--hi) var(--dk);box-shadow:inset 1px 1px 0 var(--lo)}
+.b95.amb{background:var(--amber)}.b95.teal{background:var(--teal)}.b95.vio{background:var(--t2);color:#fff}
+.b95[disabled]{color:var(--lo);text-shadow:1px 1px 0 #fff;cursor:default}
+.eyebrow{font-family:var(--pix);font-size:10px;color:var(--t2);letter-spacing:.06em;margin-bottom:6px}
+h1.hero{font-family:var(--pix);font-weight:700;font-size:clamp(26px,3.6vw,40px);line-height:1.05;letter-spacing:.01em;margin-bottom:12px}
+h1.hero em{font-style:normal;color:var(--t2);text-shadow:2px 2px 0 var(--amber)}
+.lead{font-size:13.5px;line-height:1.55;margin-bottom:14px}
+.btns{display:flex;gap:8px;flex-wrap:wrap}
+.status{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-top:12px}
+.status div{border:1px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);padding:3px 6px;font-size:11.5px}
+.marq{margin-top:6px;background:#000;color:var(--amber);font-family:var(--term);font-size:18px;overflow:hidden;white-space:nowrap;padding:2px 0}
+.marq span{display:inline-block;padding-left:100%;animation:mq 22s linear infinite}
+@keyframes mq{to{transform:translateX(-100%)}}
+/* fee split */
+.fee{display:flex;flex-direction:column;gap:10px}
+.fee .row{display:grid;grid-template-columns:1fr 44px;gap:8px;align-items:center;font-size:12.5px}
+.fee .lbl{margin-bottom:3px}
+.prog{height:18px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:#fff;padding:2px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:repeating-linear-gradient(90deg,var(--t2) 0 9px,transparent 9px 11px);transition:width 1.6s steps(20)}
+.prog.a i{background:repeating-linear-gradient(90deg,#d98f00 0 9px,transparent 9px 11px)}.prog.t i{background:repeating-linear-gradient(90deg,#0ea58a 0 9px,transparent 9px 11px)}
+.fee b{font-family:var(--pix);font-size:14px;text-align:right}
+.small{font-size:11.5px;color:#4b4842;line-height:1.5;margin-top:10px}
+/* token */
+.tk{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.tk div{padding:8px;font-size:10.5px;color:#4b4842}
+.tk b{display:block;font-family:var(--pix);font-size:17px;color:var(--txt);margin:2px 0}
+.next{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#000;color:var(--amber);padding:8px 10px;font-family:var(--term);font-size:18px}
+.next b{font-size:30px;font-weight:400;color:#fff}
+/* coins */
+.tabs{display:flex;gap:2px;padding:6px 6px 0}
+.tab{padding:4px 10px;border:2px solid;border-bottom:0;border-color:var(--hi) var(--dk) transparent var(--hi);background:var(--face);font-size:12px;position:relative;top:2px}
+.tab.on{top:0;padding-bottom:6px;font-weight:700;z-index:1}
+.coins{margin:0 6px 6px;border-top:2px solid var(--hi);padding:8px;max-height:430px;overflow-y:auto}
+.coin{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:8px;border-bottom:1px dotted var(--lo)}
+.coin:last-child{border-bottom:0}
+.cav{width:40px;height:40px;display:grid;place-items:center;font-family:var(--pix);font-size:14px;color:#fff;border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);image-rendering:pixelated}
+.coin b{font-family:var(--pix);font-size:13px}
+.coin small{display:block;font-size:11px;color:#4b4842}
+.cbar{height:8px;border:1px solid var(--lo);background:#fff;margin-top:4px;width:180px;max-width:100%}
+.cbar i{display:block;height:100%;background:var(--teal)}
+.cd{font-family:var(--term);font-size:18px;color:var(--t2)}
+.cact{display:flex;gap:4px;align-items:center}
+.eye{width:30px;padding:5px 0}
+.eye.on{background:var(--amber)}
+/* terminal */
+.term{background:#0b0904;color:var(--amber);font-family:var(--term);font-size:18px;line-height:1.15;height:300px;overflow-y:auto;padding:8px 10px;text-shadow:0 0 4px rgba(255,176,0,.45)}
+.term .dim{color:#9c7a2e}.term .tl{color:var(--teal)}.term .pk{color:var(--pink)}
+.term .cur{animation:rec 1s steps(1) infinite}
+.tin{display:flex;align-items:center;gap:6px;background:#0b0904;color:var(--amber);font-family:var(--term);font-size:18px;padding:0 10px 8px}
+.tin input{flex:1;background:none;border:0;outline:0;color:var(--amber);font-family:var(--term);font-size:18px;caret-color:var(--amber)}
+.tfoot{display:flex;justify-content:space-between;padding:6px 8px;font-size:11.5px}
+/* how */
+.how{display:flex;flex-direction:column;gap:10px}
+.note{background:#fffbe6;border:1px solid #c9bf8f;padding:10px 12px;box-shadow:3px 3px 0 rgba(0,0,0,.15)}
+.note .n{font-family:var(--pix);font-size:22px;color:var(--t2)}
+.note h3{font-family:var(--pix);font-size:13px;margin:2px 0 4px}
+.note p{font-size:12.5px;line-height:1.5}
+/* readme */
+.menu{display:flex;gap:12px;padding:2px 6px 4px;font-size:12px}
+.menu span::first-letter{text-decoration:underline}
+.pad{font-family:'Courier New',monospace;font-size:13px;line-height:1.5;padding:10px 12px;max-height:360px;overflow-y:auto;white-space:pre-wrap}
+.pad details{margin:4px 0}
+.pad summary{cursor:pointer;font-weight:700;list-style:none}
+.pad summary::before{content:"+ "}
+.pad details[open] summary::before{content:"- "}
+/* alerts */
+.alerts{padding:14px;font-size:12.5px;line-height:1.5}
+.alerts li{list-style:none;display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px dotted var(--lo)}
+/* launch dialog */
+.launch label{display:block;font-size:12px;margin:10px 0 4px;font-weight:700}
+.launch input[type=text]{width:100%;padding:5px 7px;border:2px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);background:#fff;font-size:13px;outline:0}
+.launch .rng{display:flex;align-items:center;gap:10px}.launch .rng input{flex:1}
+.launch .chk{display:flex;gap:8px;align-items:flex-start;font-size:12px;margin-top:10px;font-weight:400}
+/* badges */
+.footer{position:relative;z-index:5;margin-left:96px;padding:30px 20px 80px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.badge{width:88px;height:31px;display:grid;place-items:center;text-align:center;font-family:var(--pix);font-size:8.5px;line-height:1.1;border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);color:#fff}
+.visit{font-size:12.5px;color:#fff;text-shadow:1px 1px 0 #000;display:flex;align-items:center;gap:6px}
+.odo{display:inline-flex;background:#000;padding:2px;gap:1px}
+.odo i{font-style:normal;font-family:var(--term);font-size:20px;color:#39ff6a;background:#111;width:14px;text-align:center}
+.legal{max-width:760px;text-align:center;font-size:11px;color:rgba(255,255,255,.65);line-height:1.6}
+/* taskbar */
+.task{position:fixed;left:0;right:0;bottom:0;z-index:60;height:34px;background:var(--face);border-top:2px solid var(--hi);display:flex;align-items:center;gap:4px;padding:3px 4px}
+.start{display:flex;align-items:center;gap:5px;font-weight:700}
+.start.on{border-color:var(--dk) var(--hi) var(--hi) var(--dk)}
+.tbtns{display:flex;gap:3px;flex:1;overflow-x:auto;scrollbar-width:none}
+.tbtn{font-size:12px;padding:4px 10px;font-weight:400;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+.tbtn.on{border-color:var(--dk) var(--hi) var(--hi) var(--dk);background:#e3e0d8;font-weight:700}
+.tray{display:flex;align-items:center;gap:8px;padding:3px 8px;border:1px solid;border-color:var(--lo) var(--hi) var(--hi) var(--lo);font-size:12px;height:26px}
+.tray button{background:none;border:0;padding:0;font-size:14px}
+.smenu{position:fixed;left:4px;bottom:36px;z-index:70;width:230px;display:none}
+.smenu.on{display:flex}
+.smenu .side{width:26px;background:linear-gradient(0deg,var(--t1),var(--t2));color:#fff;writing-mode:vertical-rl;transform:rotate(180deg);font-family:var(--pix);font-size:14px;padding:8px 0;text-align:left}
+.smenu ul{list-style:none;flex:1;padding:3px}
+.smenu li button{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;background:none;border:0;text-align:left;font-size:12.5px}
+.smenu li button:hover{background:var(--t2);color:#fff}
+.smenu hr{border:0;border-top:1px solid var(--lo);border-bottom:1px solid var(--hi);margin:3px 0}
+/* popup + screensaver + shutdown */
+.popup{position:fixed;right:14px;bottom:46px;z-index:80;width:290px;animation:pop .2s steps(4)}
+.ss{position:fixed;inset:0;z-index:90;background:#000;display:none;cursor:none}
+.ss.on{display:block}
+.ss canvas{width:100%;height:100%;display:block}
+.ssmsg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:91;display:none}
+.off{position:fixed;inset:0;z-index:95;background:#000;display:none;place-items:center;text-align:center;color:var(--amber);font-family:var(--pix);font-size:clamp(16px,3vw,28px);cursor:pointer;padding:20px}
+.off.on{display:grid}
+.off small{display:block;font-family:var(--term);font-size:20px;color:#9c7a2e;margin-top:16px}
+.toast{position:fixed;left:50%;top:14px;transform:translate(-50%,-60px);z-index:85;transition:transform .25s steps(5)}
+.toast.on{transform:translate(-50%,0)}
+.scroll-hint{position:fixed;left:50%;bottom:44px;transform:translateX(-50%);z-index:4;font-family:var(--term);font-size:19px;color:#cbbfff;text-shadow:0 0 6px #000;pointer-events:none;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translate(-50%,-5px)}}
+@media (max-width:820px){
+  .icons,.scroll-hint{display:none}
+  .desk{margin-left:0;padding:54px 8px 20px;display:flex;flex-direction:column;gap:14px}
+  .win{position:relative!important;left:auto!important;top:auto!important;width:auto!important;min-width:0}
+  .footer{margin-left:0}
+  .cam{font-size:15px}
+  .status{grid-template-columns:1fr}
+  .tk{grid-template-columns:1fr 1fr}
+  .tbtns .tbtn{display:none}
+  .cbar{width:120px}
+}
+</style>
+</head>
+<body>
+
+
+<canvas id="bg"></canvas>
+<div class="scan"></div>
+<div class="cam"><b>●</b> REC · CAM 02 · OFFICE 3F<br><span id="camT">—</span><br>keyboards touched: <span id="camK">0</span></div>
+
+<nav class="icons" id="icons">
+  <button class="ico" data-open="hero"><svg viewBox="0 0 16 16"><rect x="1" y="2" width="14" height="10" fill="#cfcbc2"/><rect x="2" y="3" width="12" height="7" fill="#24166b"/><rect x="3" y="4" width="4" height="1" fill="#ffb000"/><rect x="5" y="12" width="6" height="2" fill="#7d7a73"/></svg>thisPC</button>
+  <button class="ico" data-open="coins"><svg viewBox="0 0 16 16"><path d="M1 4h5l1 1h8v9H1z" fill="#ffb000"/><path d="M1 6h14v8H1z" fill="#ffd166"/></svg>coins</button>
+  <button class="ico" data-open="burns"><svg viewBox="0 0 16 16"><rect x="2" y="1" width="12" height="14" fill="#fff"/><rect x="3" y="3" width="8" height="1" fill="#121110"/><rect x="3" y="6" width="10" height="1" fill="#121110"/><rect x="3" y="9" width="7" height="1" fill="#e8433a"/><rect x="3" y="12" width="9" height="1" fill="#121110"/></svg>burns.log</button>
+  <button class="ico" data-open="launch"><svg viewBox="0 0 16 16"><path d="M8 1l3 5v6H5V6z" fill="#cfcbc2"/><rect x="7" y="5" width="2" height="2" fill="#6b4cff"/><path d="M5 12l-2 3h3zM11 12l2 3h-3z" fill="#e8433a"/><rect x="7" y="12" width="2" height="3" fill="#ffb000"/></svg>launch.exe</button>
+  <button class="ico" data-open="readme"><svg viewBox="0 0 16 16"><rect x="2" y="1" width="12" height="14" fill="#fff"/><rect x="2" y="1" width="12" height="2" fill="#14d3b0"/><rect x="4" y="5" width="8" height="1" fill="#7d7a73"/><rect x="4" y="8" width="8" height="1" fill="#7d7a73"/><rect x="4" y="11" width="5" height="1" fill="#7d7a73"/></svg>readme.txt</button>
+  <button class="ico" data-open="alerts"><svg viewBox="0 0 16 16"><path d="M8 2c3 0 4 2 4 5v3l2 2H2l2-2V7c0-3 1-5 4-5z" fill="#ffd166"/><rect x="7" y="13" width="2" height="2" fill="#7d7a73"/></svg>alerts.exe</button>
+  <button class="ico" id="trashIco"><svg viewBox="0 0 16 16"><rect x="3" y="4" width="10" height="11" fill="#9a968e"/><rect x="2" y="2" width="12" height="2" fill="#cfcbc2"/><rect x="5" y="6" width="1" height="7" fill="#5d5a55"/><rect x="8" y="6" width="1" height="7" fill="#5d5a55"/><rect x="11" y="6" width="1" height="7" fill="#5d5a55"/><path d="M6 1h4v1H6z" fill="#cfcbc2"/></svg>incinerator</button>
+</nav>
+
+<main class="desk" id="desk">
+  <section class="win" id="w-hero" data-title="RENOUNCE.exe" data-sub="· nobody is at the keyboard">
+    <div class="body">
+      <div class="eyebrow">MEMECOIN LAUNCHPAD · SOLANA</div>
+      <h1 class="hero">A launchpad where every coin is <em>renounced.</em></h1>
+      <p class="lead">Launch for free, with no dev wallet. Every coin opens with a countdown: anyone can join its launch basket, and everyone in it buys at one price in the launch transaction, before anyone else can trade. After that, part of every trade's fee buys the coin back and burns it, at a random moment 20 to 30 minutes after its last burn, with an on-chain receipt. Control is renounced from block one. Everyone went home hours ago, and the burns keep running.</p>
+      <div class="btns"><button class="b95 amb" data-open="launch">+ Launch a coin</button><button class="b95" data-open="burns">Watch the live burns</button><button class="b95 vio" data-open="token">$RNCD</button></div>
+      <div class="status"><div>CPU: <span id="cpu">idle</span></div><div>users online: 0</div><div>burns today: <span id="bToday">0</span></div></div>
+      <div class="marq"><span>*** welcome to RENOUNCE *** no dev wallet *** no owner *** mint authority: none *** nobody at the keyboard *** the burns run anyway ***</span></div>
+    </div>
+  </section>
+
+  <section class="win" id="w-fee" data-title="fee_split.exe" data-sub="· where each creator fee goes">
+    <div class="body fee">
+      <div><div class="lbl">Buys back the coin and burns it</div><div class="row"><div class="prog"><i data-w="50"></i></div><b>50%</b></div></div>
+      <div><div class="lbl">Buys back $RNCD and burns it</div><div class="row"><div class="prog a"><i data-w="30"></i></div><b>30%</b></div></div>
+      <div><div class="lbl">Keeps the servers humming</div><div class="row"><div class="prog t"><i data-w="20"></i></div><b>20%</b></div></div>
+      <p class="small">Burned tokens go to the Solana incinerator, 1nc1nerator1111…1111. Trading in the app adds a 0.25% app fee; half of it goes to whoever referred the trader. Fee split is planned and confirmed at launch.</p>
+    </div>
+  </section>
+
+  <section class="win" id="w-token" data-title="$RNCD" data-sub="· platform token">
+    <div class="body">
+      <p style="font-size:12.5px;line-height:1.5">30% of the creator fee on every coin buys $RNCD back and burns it, on each coin's own burn schedule, with the same receipts.</p>
+      <div class="tk"><div class="inset">BURNED<b id="tBurn">0</b>to the incinerator</div><div class="inset">SHARE OF SUPPLY<b id="tShare">0%</b>of 1,000,000,000</div><div class="inset">SOL SPENT<b id="tSol">0</b>from trading fees</div></div>
+      <div class="next"><span>Next $RNCD burn<br><small style="font-size:15px;color:#9c7a2e">random, 20 to 30 min after the last</small></span><b id="tNext">--:--</b></div>
+      <div class="btns" style="margin-top:10px"><button class="b95" disabled>Buy $RNCD · at launch</button><a class="b95 teal" id="xLink" href="https://x.com/UseRenounce" target="_blank" rel="noopener" title="@UseRenounce on X" style="text-decoration:none">Follow on X</a></div>
+      <p class="small">Sample stats for preview.</p>
+    </div>
+  </section>
+
+  <section class="win" id="w-coins" data-title="C:\RNCD\coins\" data-sub="· live launches · creator: nobody">
+    <div class="body flush">
+      <div class="tabs" id="ctabs"><button class="tab on" data-t="trending">Trending</button><button class="tab" data-t="starting">Starting</button><button class="tab" data-t="new">New</button><button class="tab" data-t="graduated">Graduated</button><span style="flex:1"></span><button class="b95 amb" data-open="launch" style="padding:3px 10px;margin-bottom:4px">+ Launch</button></div>
+      <div class="coins" id="coinList"></div>
+      <p class="small" style="margin:0 12px 10px">Sample coins. Live launches show here once $RNCD goes live.</p>
+    </div>
+  </section>
+
+  <section class="win" id="w-burns" data-title="burns.log" data-sub="· to 1nc1nerator · SIMULATION">
+    <div class="body flush">
+      <div class="term" id="term"></div>
+      <label class="tin"><span>C:\RNCD&gt;</span><input id="tIn" autocomplete="off" spellcheck="false" placeholder="type help"></label>
+      <div class="tfoot"><span id="rc">0 receipts this session · all simulated</span><button class="b95" id="alertTog" style="padding:2px 8px">🔔 Burn alerts: off</button></div>
+    </div>
+  </section>
+
+  <section class="win" id="w-how" data-title="how_it_works" data-sub="· launch, trade, burn">
+    <div class="body how">
+      <div class="note"><div class="n">01</div><h3>Launch for free</h3><p>Pick a ticker, a name and a countdown of 5 to 30 minutes, then share it. The site pays the launch fee and there is no dev wallet. Until the countdown ends anyone can join the launch basket; one transaction then launches the coin and buys it for the whole basket at one price.</p></div>
+      <div class="note"><div class="n">02</div><h3>Trade on the curve</h3><p>Buy and sell with SOL on a bonding curve. Fees are a 1% curve fee and a 0.25% app fee, half of which goes to the trader's referrer. A full curve graduates the coin to a locked liquidity pool.</p></div>
+      <div class="note"><div class="n">03</div><h3>Burns, with receipts</h3><p>Of every trade's creator fee, 50% buys back the coin and 30% buys back $RNCD, and both are burned. At a random moment 20 to 30 minutes after its last burn, each coin burns its whole bucket once it holds at least 0.01 SOL.</p></div>
+    </div>
+  </section>
+
+  <section class="win" id="w-readme" data-title="readme.txt" data-sub="· Notepad">
+    <div class="body flush"><div class="menu"><span>File</span><span>Edit</span><span>Search</span><span>Help</span></div>
+      <div class="inset pad">RENOUNCE README.TXT
+====================
+
+<details open><summary>[1] Launching</summary>Free. The site pays the launch fee. No dev wallet, no team allocation. Pick a ticker, a name and a countdown of 5 to 30 minutes.</details><details><summary>[2] The launch basket</summary>Until the countdown ends anyone can join with SOL. One transaction then launches the coin and buys it for the whole basket at one price, before anyone else can trade.</details><details><summary>[3] One a day</summary>A ticker, name, X profile or website goes to only one new coin a day.</details><details><summary>[4] Fees</summary>1% curve fee and 0.25% app fee. Creator fees split 50% coin burn, 30% $RNCD burn, 20% servers.</details><details><summary>[5] Burn timing</summary>Random, 20 to 30 minutes after the last burn, once the bucket holds at least 0.01 SOL. Nothing caps a burn.</details><details><summary>[6] Receipts</summary>Every burn is an on-chain transaction to the incinerator, linked from the coin.</details><details><summary>[7] Graduation</summary>A full curve moves to a locked liquidity pool. Burns continue after graduation.</details><details><summary>[8] Who runs it</summary>Nobody. Mint and freeze authority are renounced at launch. Everyone is AFK.</details>
+-- last edited 03:00 by nobody</div></div>
+  </section>
+
+  <section class="win" id="w-alerts" data-title="alerts.exe" data-sub="· coins you're watching">
+    <div class="body flush"><div class="alerts" id="alertList"></div></div>
+  </section>
+
+  <section class="win hid" id="w-launch" data-title="launch.exe" data-sub="· new coin wizard">
+    <div class="body launch">
+      <div class="eyebrow">STEP 1 OF 1 · NOBODY WILL HELP YOU</div>
+      <label>Ticker</label><input type="text" id="lT" maxlength="9" placeholder="BRB">
+      <label>Name</label><input type="text" id="lN" maxlength="24" placeholder="Be Right Back">
+      <label>Countdown</label><div class="rng"><input type="range" id="lC" min="5" max="30" value="10"><b id="lCv" style="font-family:var(--pix)">10 min</b></div>
+      <label class="chk"><input type="checkbox" id="lOk"> I understand the coin is renounced, nobody is here, and the burns run on their own.</label>
+      <div class="btns" style="margin-top:14px;justify-content:flex-end"><button class="b95" data-close="launch">Cancel</button><button class="b95 amb" id="lGo">Launch (free)</button></div>
+      <p class="small">Demo: this adds a simulated coin to the Starting tab.</p>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <div class="badges">
+    <div class="badge" style="background:#6b4cff">$RNCD<br>NO DEV WALLET</div><div class="badge" style="background:#e8433a">BURNS<br>24 / 7</div><div class="badge" style="background:#14d3b0;color:#121110">SOLANA<br>POWERED</div><div class="badge" style="background:#121110;color:#ffb000">BEST VIEWED<br>AT 3:00 AM</div><div class="badge" style="background:#ffb000;color:#121110">OWNER:<br>NONE</div><div class="badge" style="background:repeating-linear-gradient(45deg,#ffd400 0 6px,#121110 6px 12px);color:#fff;text-shadow:1px 1px 0 #000">BRB<br>NEVER</div>
+  </div>
+  <div class="visit">You are visitor <span class="odo" id="odo"></span> to this empty office.</div>
+  <p class="legal">RENOUNCE · $RNCD · <a href="https://x.com/UseRenounce" target="_blank" rel="noopener">X</a> · RENOUNCE is an independent project. It is pre-launch: coins, burns, stats and receipts on this page are samples or simulations, the fee split is planned, and launches open with $RNCD. Memecoins are extremely risky. Nothing here is financial advice.</p>
+</footer>
+
+<div class="scroll-hint">▼ scroll down · nobody's coming back ▼</div>
+
+<div class="smenu win" id="smenu" style="position:fixed;animation:none;padding:3px"><div class="side">RENOUNCE<b style="font-weight:400;opacity:.7">98</b></div><ul>
+  <li><button data-open="launch">🚀 Launch a coin</button></li><li><button data-open="coins">📁 Coins</button></li><li><button data-open="burns">🔥 burns.log</button></li><li><button data-open="token">🪙 $RNCD</button></li><li><button data-open="readme">📄 readme.txt</button></li><li><button data-open="alerts">🔔 alerts.exe</button></li><hr><li><button id="ssGo">🌙 Screensaver</button></li><li><button id="shut">⏻ Shut down…</button></li></ul></div>
+
+<div class="task"><button class="b95 start" id="startBtn"><svg width="16" height="16" viewBox="0 0 16 16"><rect x="1" y="1" width="6" height="6" fill="#e8433a"/><rect x="9" y="1" width="6" height="6" fill="#14d3b0"/><rect x="1" y="9" width="6" height="6" fill="#6b4cff"/><rect x="9" y="9" width="6" height="6" fill="#ffb000"/></svg>Start</button><div class="tbtns" id="tbtns"></div><div class="tray"><button id="sndBtn" title="Sound">🔈</button><span style="font-family:var(--pix);font-size:10px;color:var(--t2)">$RNCD</span><span id="clock">--:--</span></div></div>
+
+<div class="ss" id="ss"><canvas id="ssc"></canvas></div>
+<div class="off" id="off"><div>It's now safe to turn off your computer.<small>(nobody was using it anyway · click to come back)</small></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)],clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store={get(k,d){try{const v=localStorage.getItem('rncd-'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('rncd-'+k,JSON.stringify(v))}catch(e){}}};
+const pad=n=>String(n).padStart(2,'0');
+const B58='123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz',tx=()=>{let s='';for(let i=0;i<8;i++)s+=pick(B58);return s.slice(0,4)+'…'+s.slice(4)};
+const isMobile=()=>innerWidth<=820;
+
+/* ---------- sound ---------- */
+let AC=null,snd=store.get('snd',true);
+function beep(f,d,type,v){if(!snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'square';o.frequency.value=f;g.gain.setValueAtTime(v||.04,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+(d||.08));o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+(d||.08)+.02)}catch(e){}}
+const ding=()=>{beep(880,.12,'triangle',.08);setTimeout(()=>beep(1320,.25,'triangle',.07),110)};
+$('#sndBtn').onclick=()=>{snd=!snd;store.set('snd',snd);$('#sndBtn').textContent=snd?'🔈':'🔇';if(snd)beep(660,.08)};$('#sndBtn').textContent=snd?'🔈':'🔇';
+
+/* ---------- toast ---------- */
+let toastT;function toast(m){const t=$('#toast');t.innerHTML=`<div class="win" style="position:static;min-width:220px;animation:none"><div class="bar"><span class="ttl">RENOUNCE.exe</span></div><div class="body" style="padding:8px 12px">${m}</div></div>`;t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2600)}
+
+/* ---------- windows ---------- */
+const WINS=['hero','fee','token','coins','burns','how','readme','alerts','launch'];
+const NAMES={hero:'RENOUNCE.exe',fee:'fee_split',token:'$RNCD',coins:'Coins',burns:'Burns',how:'How it works',readme:'readme.txt',alerts:'Alerts',launch:'+ Launch'};
+let zTop=10,moved=new Set();
+$$('.win[data-title]').forEach(w=>{const k=w.id.slice(2);const bar=document.createElement('div');bar.className='bar';bar.innerHTML=`<span class="ttl">${esc(w.dataset.title)} <i>${esc(w.dataset.sub||'')}</i></span><button class="wb" data-min title="Minimise">_</button><button class="wb" data-max title="Maximise">□</button><button class="wb" data-x title="Close">×</button>`;w.prepend(bar);
+  w.addEventListener('pointerdown',()=>front(k));
+  bar.querySelector('[data-x]').onclick=e=>{e.stopPropagation();closeW(k)};bar.querySelector('[data-min]').onclick=e=>{e.stopPropagation();w.classList.add('hid');beep(300,.06);renderTask()};
+  bar.querySelector('[data-max]').onclick=e=>{e.stopPropagation();if(isMobile())return;if(w.dataset.max){Object.assign(w.style,JSON.parse(w.dataset.max));delete w.dataset.max}else{w.dataset.max=JSON.stringify({left:w.style.left,top:w.style.top,width:w.style.width});w.style.left='0px';w.style.top=(scrollY+8)+'px';w.style.width=($('#desk').clientWidth-16)+'px'}front(k)};
+  bar.addEventListener('pointerdown',e=>{if(e.target.closest('.wb')||isMobile())return;const sx=e.clientX,sy=e.clientY,ox=parseFloat(w.style.left)||0,oy=parseFloat(w.style.top)||0;bar.setPointerCapture(e.pointerId);
+    const mv=ev=>{w.style.left=clamp(ox+ev.clientX-sx,-40,$('#desk').clientWidth-120)+'px';w.style.top=Math.max(0,oy+ev.clientY-sy)+'px';moved.add(k)};const up=()=>{bar.removeEventListener('pointermove',mv);bar.removeEventListener('pointerup',up);growDesk()};bar.addEventListener('pointermove',mv);bar.addEventListener('pointerup',up)})});
+function front(k){$$('.win').forEach(x=>x.classList.remove('front'));const w=$('#w-'+k);if(!w)return;w.classList.add('front');w.style.zIndex=++zTop;renderTask()}
+function openW(k){const w=$('#w-'+k);if(!w)return;const was=w.classList.contains('hid');w.classList.remove('hid');front(k);if(k==='launch'&&!isMobile()&&was){w.style.left=Math.max(10,($('#desk').clientWidth-380)/2)+'px';w.style.top=(scrollY+90)+'px';w.style.width='380px'}if(!isMobile()){const r=w.getBoundingClientRect();if(r.top<0||r.top>innerHeight-80)scrollTo({top:scrollY+r.top-70,behavior:'smooth'})}else w.scrollIntoView({behavior:'smooth',block:'start'});beep(520,.06);closeStart()}
+function closeW(k){$('#w-'+k).classList.add('hid');beep(240,.07);renderTask()}
+function renderTask(){$('#tbtns').innerHTML=WINS.filter(k=>k!=='launch'||!$('#w-launch').classList.contains('hid')).map(k=>{const w=$('#w-'+k);const on=w.classList.contains('front')&&!w.classList.contains('hid');return`<button class="b95 tbtn ${on?'on':''}" data-tb="${k}" style="${k==='launch'?'background:var(--amber)':''}">${NAMES[k]}</button>`}).join('');
+  $$('[data-tb]').forEach(b=>b.onclick=()=>{const k=b.dataset.tb,w=$('#w-'+k);if(!w.classList.contains('hid')&&w.classList.contains('front')){w.classList.add('hid');renderTask()}else openW(k)})}
+document.addEventListener('click',e=>{const o=e.target.closest('[data-open]');if(o){e.preventDefault();openW(o.dataset.open)}const c=e.target.closest('[data-close]');if(c)closeW(c.dataset.close)});
+$$('.ico').forEach(i=>{i.onclick=()=>{$$('.ico').forEach(x=>x.classList.remove('sel'));i.classList.add('sel')}});
+// icons need double-click; single click only selects
+$$('.ico[data-open]').forEach(i=>{const k=i.dataset.open;i.removeAttribute('data-open');i.dataset.k=k;i.ondblclick=()=>openW(k);i.addEventListener('keydown',e=>{if(e.key==='Enter')openW(k)});let last=0;i.addEventListener('pointerup',e=>{if(e.pointerType==='touch'){openW(k)}})});
+$('#trashIco').ondblclick=()=>{toast('The incinerator is 1nc1nerator1111…1111. It eats tokens. It does not give them back.');beep(120,.3,'sawtooth',.05)};
+
+function layout(){if(isMobile())return;const dw=$('#desk').clientWidth,avail=dw-24,gap=26;let w1=Math.min(660,Math.round((avail-gap)*.6)),w2=Math.min(460,avail-gap-w1);if(w2<300){w1=Math.min(660,avail);w2=w1}
+  const twoCol=w2<w1||avail>=w1+w2+gap;const c1=['hero','coins','burns','alerts'],c2=['fee','token','how','readme'];let y1=60,y2=60;const x1=8,x2=twoCol&&avail>=w1+w2+gap?x1+w1+gap:x1;
+  const place=(k,x,w,yref)=>{const el=$('#w-'+k);if(moved.has(k)||el.classList.contains('hid'))return yref;el.style.left=x+'px';el.style.width=w+'px';el.style.top=yref+'px';return yref+el.offsetHeight+gap};
+  if(x2===x1){[...c1.slice(0,1),...c2.slice(0,2),...c1.slice(1),...c2.slice(2)].forEach(k=>{y1=place(k,x1,w1,y1)})}else{y1=place('hero',x1,Math.min(w1,620),y1);const fold=Math.max(y1,innerHeight-10);y1=fold;y2=fold;c1.slice(1).forEach(k=>y1=place(k,x1,w1,y1));c2.forEach(k=>y2=place(k,x2,w2,y2))}growDesk()}
+function growDesk(){if(isMobile()){$('#desk').style.height='';return}let m=0;$$('.desk .win:not(.hid)').forEach(w=>m=Math.max(m,w.offsetTop+w.offsetHeight));$('#desk').style.height=(m+40)+'px'}
+addEventListener('resize',()=>{layout()});
+
+/* ---------- start menu, screensaver, shutdown ---------- */
+function closeStart(){$('#smenu').classList.remove('on');$('#startBtn').classList.remove('on')}
+$('#startBtn').onclick=e=>{e.stopPropagation();$('#smenu').classList.toggle('on');$('#startBtn').classList.toggle('on');beep(440,.05)};
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('#smenu,#startBtn'))closeStart()});
+$('#shut').onclick=()=>{closeStart();$('#off').classList.add('on');beep(330,.2,'triangle',.06);setTimeout(()=>beep(220,.4,'triangle',.06),180)};
+$('#off').onclick=()=>{$('#off').classList.remove('on');toast('Welcome back. Nobody noticed you were gone.')};
+let lastAct=Date.now(),ssOn=false;
+['pointermove','pointerdown','keydown','scroll','wheel'].forEach(ev=>addEventListener(ev,()=>{lastAct=Date.now();if(ssOn)stopSS()},{passive:true}));
+$('#ssGo').onclick=e=>{e.stopPropagation();closeStart();setTimeout(startSS,150)};
+setInterval(()=>{if(!ssOn&&Date.now()-lastAct>60000&&!document.hidden)startSS()},3000);
+let ssStars=[],ssLogo={x:100,y:100,vx:2.2,vy:1.6,c:0};
+function startSS(){ssOn=true;$('#ss').classList.add('on');const c=$('#ssc');c.width=innerWidth;c.height=innerHeight;ssStars=Array.from({length:400},()=>({x:rnd(-1,1),y:rnd(-1,1),z:rnd(.1,1)}));lastAct=Date.now()+400;requestAnimationFrame(ssLoop)}
+function stopSS(){if(Date.now()<lastAct)return;ssOn=false;$('#ss').classList.remove('on');toast('Oh, you\'re back. The burns didn\'t wait for you.')}
+const SSC=['#ffb000','#14d3b0','#ff4f9a','#6b4cff','#fff'];
+function ssLoop(){if(!ssOn)return;const c=$('#ssc'),x=c.getContext('2d'),W=c.width,H=c.height;x.fillStyle='rgba(0,0,0,.35)';x.fillRect(0,0,W,H);for(const s of ssStars){s.z-=.006;if(s.z<=.02){s.x=rnd(-1,1);s.y=rnd(-1,1);s.z=1}const px=W/2+s.x/s.z*W*.5,py=H/2+s.y/s.z*H*.5,sz=(1-s.z)*3;x.fillStyle='#fff';x.fillRect(px,py,sz,sz)}
+  const L=ssLogo;L.x+=L.vx;L.y+=L.vy;const lw=260,lh=90;if(L.x<0||L.x+lw>W){L.vx*=-1;L.c++;beep(rnd(300,700),.04)}if(L.y<0||L.y+lh>H){L.vy*=-1;L.c++;beep(rnd(300,700),.04)}x.fillStyle=SSC[L.c%SSC.length];x.font='700 72px Silkscreen,monospace';x.textBaseline='top';x.fillText('RNCD',L.x+20,L.y);x.font='18px VT323,monospace';x.fillText('renounced · the burns run anyway',L.x+20,L.y+70);requestAnimationFrame(ssLoop)}
+
+/* ---------- coins ---------- */
+const COL=['#6b4cff','#e8433a','#14d3b0','#ffb000','#ff4f9a','#2f80ed','#121110','#7d5a3c'];
+let coins=[
+ {tk:'BRB',nm:'Be Right Back',st:'trending',curve:.72},{tk:'IDLEFAN',nm:'Idle CPU Fan',st:'trending',curve:.58},{tk:'SNOOZE',nm:'Snooze Button',st:'trending',curve:.44},{tk:'LOGOFF',nm:'Logged Off',st:'trending',curve:.31},
+ {tk:'PING',nm:'Ping Timeout',st:'starting',cd:Date.now()+rnd(4,14)*60e3,basket:rnd(1,6)},{tk:'ZZZ',nm:'Sleep Mode',st:'starting',cd:Date.now()+rnd(8,26)*60e3,basket:rnd(.5,4)},{tk:'AWAY',nm:'Status: Away',st:'starting',cd:Date.now()+rnd(2,6)*60e3,basket:rnd(2,9)},
+ {tk:'NOOPS',nm:'No Operations',st:'new',curve:.08},{tk:'CRT',nm:'CRT Hum',st:'new',curve:.12},{tk:'404',nm:'Dev Not Found',st:'new',curve:.05},
+ {tk:'SCRNSVR',nm:'Flying Toasters Adjacent',st:'graduated',curve:1},{tk:'3AM',nm:'Three AM',st:'graduated',curve:1}];
+coins.forEach((c,i)=>{c.col=COL[i%COL.length];c.burned=Math.floor(rnd(2e5,4e6));c.next=Date.now()+rnd(20,30)*60e3*Math.random()});
+coins=coins.concat(store.get('mine',[]).map(c=>Object.assign(c,{mine:true})));
+let watch=new Set(store.get('watch',[])),ct='trending',alertsOn=store.get('alerts',false);
+function renderCoins(){const L=coins.filter(c=>c.st===ct);$('#ctabs').querySelectorAll('.tab').forEach(t=>{const n=coins.filter(c=>c.st===t.dataset.t).length;t.textContent=t.dataset.t[0].toUpperCase()+t.dataset.t.slice(1)+` (${n})`;t.classList.toggle('on',t.dataset.t===ct)});
+  $('#coinList').innerHTML=L.length?L.map(c=>{const left=c.cd?Math.max(0,c.cd-Date.now()):0;return`<div class="coin"><div class="cav" style="background:${c.col}">${esc(c.tk.slice(0,2))}</div><div><b>$${esc(c.tk)}</b>${c.mine?' <small style="display:inline;color:var(--t2)">· yours</small>':''}<small>${esc(c.nm)} · creator: nobody</small>${c.st==='starting'?`<small>basket: ${c.basket.toFixed(2)} SOL · <span class="cd">${pad(Math.floor(left/60e3))}:${pad(Math.floor(left%60e3/1e3))}</span></small>`:`<div class="cbar"><i style="width:${(c.curve*100).toFixed(0)}%"></i></div><small>${c.st==='graduated'?'graduated · LP locked':'curve '+(c.curve*100).toFixed(0)+'%'} · ${c.burned.toLocaleString()} burned</small>`}</div>
+   <div class="cact">${c.st==='starting'?`<button class="b95 amb" data-join="${esc(c.tk)}">Join basket</button>`:`<button class="b95" data-trade="${esc(c.tk)}">Trade</button>`}<button class="b95 eye ${watch.has(c.tk)?'on':''}" data-eye="${esc(c.tk)}" title="Watch for burns">👁</button></div></div>`}).join(''):'<p style="padding:16px;color:#4b4842">Nothing here. Nobody launched anything. Classic.</p>';
+  $$('[data-eye]').forEach(b=>b.onclick=()=>{const t=b.dataset.eye;watch.has(t)?watch.delete(t):watch.add(t);store.set('watch',[...watch]);beep(watch.has(t)?700:300,.06);if(watch.has(t)&&!alertsOn){alertsOn=true;store.set('alerts',true);renderAlertTog()}renderCoins();renderAlerts()});
+  $$('[data-join]').forEach(b=>b.onclick=()=>{const c=coins.find(x=>x.tk===b.dataset.join);c.basket+=.25;toast(`Joined the $${esc(c.tk)} basket with 0.25 SOL (demo). Everyone buys at one price when the countdown ends.`);beep(600,.08);renderCoins()});
+  $$('[data-trade]').forEach(b=>b.onclick=()=>{toast(`Trading opens when $RNCD goes live. $${esc(b.dataset.trade)} is a sample coin.`);beep(200,.12,'sawtooth',.04)})}
+$$('#ctabs .tab').forEach(t=>t.onclick=()=>{ct=t.dataset.t;renderCoins();beep(500,.04)});
+
+/* ---------- launch ---------- */
+$('#lC').oninput=e=>$('#lCv').textContent=e.target.value+' min';
+$('#lT').oninput=e=>e.target.value=e.target.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+$('#lGo').onclick=()=>{const tk=$('#lT').value.trim(),nm=$('#lN').value.trim()||tk;if(tk.length<2)return toast('Ticker needs at least 2 characters.');if(coins.some(c=>c.tk===tk))return toast('That ticker is taken today. One a day.');if(!$('#lOk').checked)return toast('Tick the box. Nobody is here to do it for you.');
+  const c={tk,nm,st:'starting',cd:Date.now()+(+$('#lC').value)*60e3,basket:0,col:pick(COL),burned:0,curve:0,mine:true,next:0};coins.push(c);store.set('mine',coins.filter(x=>x.mine));closeW('launch');ct='starting';openW('coins');renderCoins();ding();toast(`$${esc(tk)} is counting down. Share it. Or don't. Nobody's watching.`);log(`<span class="tl">[${ts()}] LAUNCH QUEUED $${esc(tk)} · countdown ${$('#lC').value} min · dev wallet: none</span>`);['lT','lN'].forEach(i=>$('#'+i).value='');$('#lOk').checked=false};
+
+/* ---------- burns + terminal ---------- */
+let receipts=0,today=Math.floor(rnd(120,180)),tB=store.get('tb',Math.floor(rnd(1.6e7,2e7))),tSol=+(tB/1.9e6).toFixed(2),nextAfk=Date.now()+rnd(6,20)*60e3;
+const ts=()=>{const d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds())};
+function log(h){const t=$('#term');const near=t.scrollHeight-t.scrollTop-t.clientHeight<40;const d=document.createElement('div');d.innerHTML=h;t.appendChild(d);while(t.children.length>160)t.firstChild.remove();if(near)t.scrollTop=t.scrollHeight}
+function burn(tk){const c=coins.find(x=>x.tk===tk);const amt=Math.floor(rnd(6e4,6e5)),sol=rnd(.001,.02);if(c)c.burned+=amt;if(tk==='RNCD'){tB+=amt;tSol+=sol;store.set('tb',tB)}receipts++;today++;
+  log(`<span class="dim">[${ts()}]</span> BURN ${amt.toLocaleString()} <span class="${tk==='RNCD'?'pk':''}">$${tk}</span> · ${sol.toFixed(4)} SOL · tx ${tx()} → 1nc1nerator`);
+  $('#rc').textContent=`${receipts} receipt${receipts===1?'':'s'} this session · all simulated`;
+  if(alertsOn&&watch.has(tk))popup(tk,amt,sol)}
+function burnTick(){const live=coins.filter(c=>c.st!=='starting');const n=Math.random()<.3?Math.floor(rnd(2,5)):1;for(let i=0;i<n;i++)burn(Math.random()<.3?'RNCD':pick(live).tk);$('#cpu').textContent=pick(['idle','idle','burning…','idle','0%']);setTimeout(burnTick,rnd(2500,7000))}
+function popup(tk,amt,sol){ding();const p=document.createElement('div');p.className='popup';p.innerHTML=`<div class="win front" style="position:static;animation:none"><div class="bar"><span class="ttl">🔥 Burn alert</span><button class="wb">×</button></div><div class="body" style="display:flex;gap:10px;align-items:center"><div style="font-size:28px">🔥</div><div><b style="font-family:var(--pix)">$${esc(tk)}</b> just burned<br>${amt.toLocaleString()} tokens · ${sol.toFixed(4)} SOL</div></div></div>`;document.body.appendChild(p);p.querySelector('.wb').onclick=()=>p.remove();setTimeout(()=>p.remove(),5000)}
+function renderAlertTog(){$('#alertTog').textContent='🔔 Burn alerts: '+(alertsOn?'on':'off')}
+$('#alertTog').onclick=()=>{alertsOn=!alertsOn;store.set('alerts',alertsOn);renderAlertTog();beep(alertsOn?800:300,.06);if(alertsOn&&!watch.size)toast('Tap 👁 on a coin to watch it.')};
+function renderAlerts(){const L=[...watch].filter(t=>coins.some(c=>c.tk===t)||t==='RNCD');$('#alertList').innerHTML=L.length?`<ul>${L.map(t=>{const c=coins.find(x=>x.tk===t);return`<li><span><b style="font-family:var(--pix)">$${esc(t)}</b> · ${c?c.burned.toLocaleString():'—'} burned</span><button class="b95" data-eye2="${esc(t)}" style="padding:2px 8px">Unwatch</button></li>`}).join('')}</ul><p class="small">You get a pop-up when a watched coin burns${alertsOn?'':' (alerts are off in burns.log)'}. Saved on this device.</p>`:`<p>Nothing watched yet. The servers are lonely.</p><p class="small">Tap 👁 on any coin to watch it. You get a pop-up when it burns. Saved on this device.</p>`;
+  $$('[data-eye2]').forEach(b=>b.onclick=()=>{watch.delete(b.dataset.eye2);store.set('watch',[...watch]);renderAlerts();renderCoins()})}
+// terminal commands
+const HELP=['help · list commands','coins · list live coins','burn · force a (simulated) burn','whoami · who is logged in','uptime · how long nobody has been here','rncd · token stats','brb · leave','clear · clear the screen','matrix · don\'t'];
+$('#tIn').addEventListener('keydown',e=>{if(e.key!=='Enter')return;const v=e.target.value.trim();e.target.value='';if(!v)return;log(`<span class="tl">C:\\RNCD&gt; ${esc(v)}</span>`);beep(900,.02);const cmd=v.toLowerCase().split(' ')[0];
+  if(cmd==='help')HELP.forEach(h=>log('  '+h));else if(cmd==='coins')coins.forEach(c=>log(`  $${esc(c.tk).padEnd(9,' ')} ${c.st.padEnd(10,' ')} ${c.burned.toLocaleString()} burned`));else if(cmd==='burn'){burn(pick(coins.filter(c=>c.st!=='starting')).tk)}
+  else if(cmd==='whoami')log('  nobody');else if(cmd==='uptime')log(`  nobody has touched a keyboard in ${Math.floor((Date.now()-START)/1000)+17*3600}s`);else if(cmd==='rncd'||cmd==='afk')log(`  $RNCD burned ${tB.toLocaleString()} · ${(tB/1e7).toFixed(2)}% of supply · ${tSol.toFixed(2)} SOL spent`);
+  else if(cmd==='brb'){log('  ok. see you never.');setTimeout(startSS,700)}else if(cmd==='clear')$('#term').innerHTML='';else if(cmd==='matrix'){let n=0;const iv=setInterval(()=>{log('<span class="tl">'+Array.from({length:44},()=>pick('01アイウエオカキ$RNCD'.split(''))).join('')+'</span>');if(++n>18)clearInterval(iv)},60)}
+  else if(cmd==='sudo')log('  nobody is in the sudoers file. this incident will not be reported, because nobody is here.');else log(`  '${esc(cmd)}' is not recognized. try help.`)});
+$('#term').addEventListener('click',()=>$('#tIn').focus());
+const START=Date.now();
+
+/* ---------- pixel office background ---------- */
+const bg=$('#bg'),bx=bg.getContext('2d');const PW=320,PH=180;const buf=document.createElement('canvas');buf.width=PW;buf.height=PH;const p=buf.getContext('2d');
+let mx=.5,my=.5,smx=.5,smy=.5,chairA=0,chairV=0,catZ=0,lines=[];
+addEventListener('pointermove',e=>{mx=e.clientX/innerWidth;my=e.clientY/innerHeight},{passive:true});
+function bgSize(){bg.width=innerWidth;bg.height=innerHeight}addEventListener('resize',bgSize);bgSize();
+const sky=Array.from({length:40},()=>({x:Math.floor(rnd(60,200)),y:Math.floor(rnd(14,60)),t:rnd(0,6)}));
+const bld=[];{let x=58;while(x<206){const w=Math.floor(rnd(8,18)),h=Math.floor(rnd(14,44));const wins=[];for(let yy=86-h+3;yy<84;yy+=4)for(let xx=x+2;xx<x+w-2;xx+=3)if(Math.random()<.35)wins.push([xx,yy,Math.random()<.15]);bld.push({x,w,h,wins});x+=w+1}}
+for(let i=0;i<9;i++)lines.push(Math.floor(rnd(8,22)));
+bg.addEventListener('click',()=>{});
+function px(x,y,w,h,c){p.fillStyle=c;p.fillRect(Math.round(x),Math.round(y),w,h)}
+function drawOffice(t){smx+=(mx-smx)*.05;smy+=(my-smy)*.05;const ox=(smx-.5)*-8,oy=(smy-.5)*-4;
+  // wall
+  const g=p.createLinearGradient(0,0,0,PH);g.addColorStop(0,'#1b1238');g.addColorStop(1,'#2b1b4f');p.fillStyle=g;p.fillRect(0,0,PW,PH);
+  for(let y=8;y<120;y+=12)px(0,y,PW,1,'rgba(0,0,0,.12)');
+  // window (far layer)
+  const wx=112+ox*.4,wy=10+oy*.4;px(wx-3,wy-3,156,84,'#140c2a');px(wx,wy,150,78,'#0a1430');const sg=p.createLinearGradient(0,wy,0,wy+78);sg.addColorStop(0,'#0b1236');sg.addColorStop(1,'#2a1d5c');p.fillStyle=sg;p.fillRect(wx,wy,150,78);
+  for(const s of sky){if(Math.sin(t*1.5+s.t)>-.3)px(wx+s.x-56,wy+s.y-10,1,1,'#fff')}
+  px(wx+118,wy+10,10,10,'#ffe7a8');px(wx+120,wy+12,3,3,'#e6c97a');px(wx+124,wy+16,2,2,'#e6c97a');
+  for(const b of bld){px(wx+b.x-58,wy+76-b.h,b.w,b.h,'#120a26');for(const w of b.wins){if(w[2]&&Math.sin(t*.7+w[0])>.6)continue;px(wx+w[0]-58,wy+w[1]-10-(86-76),1,2,w[2]?'#14d3b0':'#ffb000')}}
+  px(wx+74,wy,2,78,'#140c2a');px(wx,wy+38,150,2,'#140c2a');
+  // clock with real time
+  const cx0=268+ox*.6,cy0=24+oy*.6;p.fillStyle='#d8d2c4';p.beginPath();p.arc(cx0,cy0,11,0,6.283);p.fill();p.fillStyle='#1b1238';p.beginPath();p.arc(cx0,cy0,9,0,6.283);p.fill();const d=new Date(),ha=((d.getHours()%12)+d.getMinutes()/60)/12*6.283-Math.PI/2,ma=(d.getMinutes()/60)*6.283-Math.PI/2;p.strokeStyle='#ffb000';p.lineWidth=1.5;p.beginPath();p.moveTo(cx0,cy0);p.lineTo(cx0+Math.cos(ha)*5,cy0+Math.sin(ha)*5);p.stroke();p.strokeStyle='#fff';p.lineWidth=1;p.beginPath();p.moveTo(cx0,cy0);p.lineTo(cx0+Math.cos(ma)*7,cy0+Math.sin(ma)*7);p.stroke();
+  // server rack right
+  const rx=4+ox*.8,ry=50+oy*.8;px(rx,ry,40,80,'#0e0a1c');for(let i=0;i<7;i++){px(rx+3,ry+4+i*10,34,7,'#1c1533');for(let k=0;k<4;k++)px(rx+6+k*4,ry+6+i*10,2,2,Math.sin(t*(3+k)+i*2+k)>0?(k%2?'#14d3b0':'#ffb000'):'#2a2244')}
+  // poster
+  px(70+ox*.6,30+oy*.6,30,38,'#e8433a');p.fillStyle='#fff';p.font='7px monospace';p.fillText('BRB',75+ox*.6,46+oy*.6);px(74+ox*.6,52+oy*.6,22,1,'#fff');px(74+ox*.6,56+oy*.6,16,1,'#fff');
+  // floor
+  px(0,128,PW,52,'#140d26');for(let x=-20;x<PW+20;x+=20){p.strokeStyle='rgba(255,255,255,.04)';p.beginPath();p.moveTo(x+ox,128);p.lineTo(x*1.6-PW*.3+ox*2,PH);p.stroke()}
+  // desk (near layer)
+  const dx=ox*1.4+52,dy=oy*1.2;px(70+dx,112+dy,190,6,'#5b3d2a');px(70+dx,118+dy,190,3,'#3a2719');px(78+dx,121+dy,6,40,'#3a2719');px(246+dx,121+dy,6,40,'#3a2719');
+  // CRT
+  px(120+dx,72+dy,64,42,'#cfcbc2');px(124+dx,76+dy,56,32,'#0b0904');px(136+dx,114+dy,32,4,'#9a968e');
+  const scroll=Math.floor(t*4)%9;for(let i=0;i<6;i++){const L=lines[(i+scroll)%lines.length];px(127+dx,79+dy+i*5,L*1.6,2,i===5?'#ffd166':'#ffb000')}
+  p.fillStyle='rgba(255,176,0,.08)';p.fillRect(118+dx,70+dy,68,48);
+  // keyboard, mug with steam, sticky note
+  px(128+dx,118+dy,48,4,'#bdb8ad');for(let k=0;k<11;k++)px(130+dx+k*4,119+dy,3,1,'#8f8b82');
+  px(204+dx,104+dy,10,9,'#14d3b0');px(213+dx,106+dy,3,4,'#14d3b0');for(let i=0;i<3;i++){const sx=206+dx+i*3+Math.sin(t*2+i)*1.5,sy=100+dy-((t*6+i*4)%10);px(sx,sy,1,1,'rgba(255,255,255,.45)')}
+  px(186+dx,80+dy,9,9,'#ffd400');p.fillStyle='#121110';p.font='5px monospace';p.fillText('afk',187+dx,86+dy);
+  // sleeping cat on desk
+  const cbx=88+dx,cby=104+dy,br=Math.sin(t*2)*.6;px(cbx,cby+2-br,22,8+br,'#f2a65a');px(cbx+18,cby-1,8,8,'#f2a65a');px(cbx+19,cby-3,2,2,'#f2a65a');px(cbx+23,cby-3,2,2,'#f2a65a');px(cbx+20,cby+2,1,1,'#3a2414');px(cbx+23,cby+2,1,1,'#3a2414');px(cbx-4,cby+7,6,2,'#f2a65a');for(let i=0;i<3;i++)px(cbx+4+i*5,cby+3,2,4,'#d88a42');
+  catZ=(catZ+.02)%3;p.fillStyle='rgba(255,255,255,.75)';p.font='7px monospace';p.fillText('z',cbx+28+catZ*3,cby-4-catZ*5);p.font='5px monospace';p.fillText('z',cbx+32+catZ*2,cby-10-catZ*4);
+  // empty office chair, slowly spinning
+  chairV+=(Math.sin(t*.3)*.002-chairV)*.02;chairA+=chairV+.003;const sw=Math.cos(chairA);const cxh=164+dx*1.2,cyh=124+dy;px(cxh-14,cyh+20,28,3,'#0e0a1c');px(cxh-1,cyh+8,3,13,'#2a2244');px(cxh-13,cyh+6,26,5,'#3d2f6b');const bw=Math.max(4,Math.abs(sw)*24);px(cxh-bw/2,cyh-22,bw,28,sw>0?'#4b3a85':'#2f2556');
+  // vignette
+  const v=p.createRadialGradient(PW/2,PH/2,40,PW/2,PH/2,200);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');p.fillStyle=v;p.fillRect(0,0,PW,PH)}
+function bgLoop(now){requestAnimationFrame(bgLoop);if(ssOn)return;drawOffice(now/1000);bx.imageSmoothingEnabled=false;const s=Math.max(bg.width/PW,bg.height/PH);const w=PW*s,h=PH*s;bx.drawImage(buf,(bg.width-w)/2,(bg.height-h)/2,w,h)}
+requestAnimationFrame(bgLoop);
+
+/* ---------- misc ---------- */
+let keys=0;addEventListener('keydown',()=>{keys++;$('#camK').textContent=keys===0?'0':keys+' (suspicious)'});
+function clock(){const d=new Date();$('#clock').textContent=d.toLocaleTimeString([], {hour:'numeric',minute:'2-digit'});$('#camT').textContent=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  $('#bToday').textContent=today;$('#tBurn').textContent=(tB/1e6).toFixed(2)+'M';$('#tShare').textContent=(tB/1e7).toFixed(2)+'%';$('#tSol').textContent=tSol.toFixed(2);
+  let left=nextAfk-Date.now();if(left<=0){burn('RNCD');nextAfk=Date.now()+rnd(20,30)*60e3;left=nextAfk-Date.now()}$('#tNext').textContent=pad(Math.floor(left/60e3))+':'+pad(Math.floor(left%60e3/1e3));
+  coins.forEach(c=>{if(c.st==='starting'&&c.cd<=Date.now()){c.st='new';c.curve=Math.min(.3,(c.basket||0)/30+.02);log(`<span class="tl">[${ts()}] LAUNCHED $${esc(c.tk)} · basket ${(c.basket||0).toFixed(2)} SOL bought at one price · dev wallet: none</span>`);if(c.mine){ding();toast(`$${esc(c.tk)} just launched. Nobody pressed anything.`);store.set('mine',coins.filter(x=>x.mine))}}if(c.st==='new'||c.st==='trending'){c.curve=Math.min(1,c.curve+rnd(0,.0012));if(c.curve>=1){c.st='graduated';log(`<span class="pk">[${ts()}] GRADUATED $${esc(c.tk)} · LP locked</span>`)}}});
+  if(ct==='starting'||Math.random()<.2)renderCoins()}
+const vis=store.get('visits',Math.floor(rnd(1300,1500)))+1;store.set('visits',vis);$('#odo').innerHTML=String(vis).padStart(7,'0').split('').map(d=>`<i>${d}</i>`).join('');
+$('#xLink').onclick=e=>{if($('#xLink').getAttribute('href')==='#'){e.preventDefault();toast('X link coming soon.')}};
+// fee bars animate when visible
+const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.querySelectorAll('.prog i').forEach(i=>i.style.width=i.dataset.w+'%');io.unobserve(en.target)}}),{threshold:.3});io.observe($('#w-fee'));
+
+/* ---------- boot ---------- */
+log('<span class="dim">C:\\RNCD\\burnd&gt; burnd.exe --watch all --to 1nc1nerator</span>');log(`<span class="dim">burnd v3.0 · watching ${coins.length} coins · users online: 0 · type help</span>`);
+for(let i=0;i<6;i++)burn(Math.random()<.3?'RNCD':pick(coins.filter(c=>c.st!=='starting')).tk);
+renderCoins();renderAlerts();renderAlertTog();renderTask();layout();setTimeout(layout,400);document.fonts&&document.fonts.ready.then(layout);front('hero');clock();setInterval(clock,1000);setTimeout(burnTick,3000);
+</script>
+
+</body>
+</html>
